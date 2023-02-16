@@ -1,0 +1,16 @@
+[Unit]
+Description=Start Chrome
+After=network-online.target
+Wants=network-online.target
+
+
+[Service]
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/dpm/.Xauthority
+User=dpm
+
+ExecStart=chromium --start-fullscreen --noerrdialogs --disable-infobars --kiosk --window-size=1920,1080 --window-position=0,0  http://localhost:5000
+
+
+[Install]
+WantedBy=graphical.target

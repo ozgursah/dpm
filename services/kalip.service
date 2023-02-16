@@ -1,0 +1,15 @@
+[Unit]
+Description=Start python
+After=network-online.target
+Wants=network-online.target 
+
+[Service]
+Type=simple
+User=dpm
+WorkingDirectory=/home/dpm/
+ExecStart=python3 dpm.py
+
+
+
+[Install]
+WantedBy=multi-user.target
