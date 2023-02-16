@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+         <style type="text/css">
+
+        body {
+            background-color:  dimgray;
+            font-family: 'Muli', sans-serif;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            cursor:none;
+        }
+                .titlebar {
+                        width:96vw;
+                        background-color:#383735;
+                        margin:16px;
+                }
+                .titletext {
+                        color:white;
+                        margin:10px 20px 10px  20px;
+                        text-align:center;
+                }
+                .card-container {
+                        width:96vw;
+                        margin:16px;
+                }
+                .card {
+                        display: flex;
+                        background-color: #fff;
+                        border-radius: 10px;
+                        box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2);
+                        max-width: 92vw;
+                        margin: 20px;
+                        overflow: hidden;
+                        width: 100%;
+                        height:200px;
+                }
+                .station {
+                        transform: rotate(-90deg);
+                        margin-top:auto;
+                        margin-bottom:auto;
+                        font-size:3vw;
+                        margin-left:-1vw;
+                }
+                .clientContainer {
+                        display: flex;
+                        border-right-style:ridge;
+                        width:6%;
+                }
+                .mouldContainer {
+                        display: flex;
+                        border-right-style:ridge;
+                        width:66%;
+                }
+                .t1Container {
+                        display: block;
+                        border-right-style:ridge;
+                        width:14%;
+                        justify-content:center;
+                }
+                .t1 {
+                        display: block;
+                        width:95%;
+                        font-size:2vw;
+                        justify-content:center;
+                }
+                .employee {
+                        display: block;
+                        width:95%;
+                        font-size:3vw;
+                        text-align:center;
+                        justify-content:center;
+                        padding-top:40px
+                }
+                .t2Container {
+                        display: flex;
+                        width:14%;
+                        font-size:2vw;
+                        justify-content:center;
+                }
+                .mould {
+                        margin-top:8px;
+                        font-size:4vw;
+                }
+
+    </style>
+  </head>
+  <body>
+        <div class='titlebar'>
+                        <h1 class='titletext'>KALIP ARIZALARI</h1>
+        </div>
+        <div class='card-container' id='cardContainer'>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+                <script type="text/javascript" charset="utf-8">
+                        const timers={};
+                    var socket = io();
+                                socket.onconnect( function() {
+                                socket.emit("connect");
+                                });
+
+                                socket.on('message', function(event) {
+                                console.log(event);
+                                });
+                                //new_issue
+                                socket.on('new_issue', function(data) {
+                                console.log("ni");
+                        console.log(data);
+
+                                const cardContainer = document.getElementById("cardContainer");
+
+                                var card=document.createElement("div");
+                                card.id=data.client;
+                                card.classList.add('card');
+
+                                var clientContainer=document.createElement("div");
+                                clientContainer.classList.add('clientContainer');
+                                clientContainer.innerHTML='<h2 class="station">'+data.client+'</h2>';
+                                card.appendChild(clientContainer);
+
+                                var mouldContainer=document.createElement("div");
+                                mouldContainer.classList.add('mouldContainer');
+                                mouldContainer.innerHTML='<h2 class="mould">'+data.mould+'</h2>';
+                                card.appendChild(mouldContainer);
+                                var t1Container=document.createElement("div");
+                                t1Container.classList.add('t1Container');
+                                var t1=document.createElement("div");
+                                t1.classList.add('t1');
+                                t1.id='t1_'+data.client;
+                                t1.innerHTML='00 : 00 : 00';
+                                t1Container.appendChild(t1);
+                                var employee=document.createElement("div");
+                                employee.classList.add('employee');
+                                employee.id='employee'+data.client;
+                                t1Container.appendChild(employee);
+                                card.appendChild(t1Container);
+                                var t2Container=document.createElement("div");
+                                t2Container.classList.add('t2Container');
+                                t2Container.id='t2_'+data.client;
+                                t2Container.innerHTML='00 : 00 : 00';
+                                card.appendChild(t2Container);
+
+
+                                cardContainer.prepend(card);
+
+                                startTimer('t1_',data.client,data.time);
+
+                        });
+
+                                //timer
+                                socket.on('timer', function(data) {
+                                console.log("timer");
+                        console.log(data);
+                                clearInterval(timers['t1_'+data.client]);
+
+                                item=document.getElementById(data.client);
+                                if(item != null)
+                                        {item.style.backgroundColor="limegreen";
+                                        startTimer('t2_',data.client,data.time);
+                                        }
+                                var emp=document.getElementById("employee"+data.client);
+                                emp.innerHTML=data.employee;
+
+                                //timers2[data.client]=setInterval(displayTimer2,1000);
+                                });
+
+                                //finish
+                                socket.on('finish', function(data) {
+                                console.log("finish");
+                        console.log(data);
+                                clearInterval(timers['t2_'+data.client]);
+                                delete timers['t1_'+data.client];
+                                delete timers['t2_'+data.client];
+                                var item=document.getElementById(data.client);
+                                if(item != null)
+                                        {item.remove();
+                                        }
+
+                                //timers2[data.client]=setInterval(displayTimer2,1000);
+                                });
+
+
+                                function startTimer(timer,client,time){
+                                        t=new Date(time).getTime();
+                                        let [hours,minutes,seconds] = [Math.floor((Date.now()-t) / 3600000),Math.floor(((Date.now()-t) % 60000)/1000),0];
+                                        let timerRef=document.getElementById(timer+client);
+                                        function displayTimer(){
+                                                seconds++;
+                                                if(seconds == 60){
+                                    seconds = 0;
+                                    minutes++;
+                                }
+                                                if(minutes == 60){
+                                    minutes = 0;
+                                    hours++;
+                                }
+
+                                                let h = hours < 10 ? "0" + hours : hours;
+                                let m = minutes < 10 ? "0" + minutes : minutes;
+                                                let s = seconds < 10 ? "0" + seconds : seconds;
+                                                timerRef.innerHTML=`${h} : ${m} : ${s}`
+                                                if(minutes==10&&timer=='t1_'){
+                                                        timerRef.style.backgroundColor="red";
+                                                }
+                                                };
+                                        timers[timer+client]=setInterval(displayTimer, 1000);
+                                        };
+
+
+                </script>
+        </body>
+
+
