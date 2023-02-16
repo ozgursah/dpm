@@ -67,7 +67,7 @@ def issuetimer(data):
 def issuefinish(data):
     global issues
     socketio.emit('finish',data)
-    issues+=-1
+    issues=max(issues-1,0)
     if issues<=0:
         if tv:
             tv.standby()
@@ -122,7 +122,7 @@ def issuetimer(data):
 def issuefinish(data):
     global issues
     socketio.emit('finish',data)
-    issues+=-1
+    issues=max(issues-1,0)
     if issues<=0:
         if tv:
             tv.standby()
